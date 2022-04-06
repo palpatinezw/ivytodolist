@@ -16,6 +16,8 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator
        screenOptions={({ route }) => ({
+        activeTintColor: 'purple',
+        inactiveTintColor: 'gray',
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
@@ -27,14 +29,9 @@ export default function App() {
 
           let colour;
           
-        return  <FontAwesome name={iconName} size={size} color={colour} />;
-      },
-      })}
-         tabBarOptions={{
-            activeTintColor: 'purple',
-            inactiveTintColor: 'gray',
-          }}
-      >
+          return  <FontAwesome name={iconName} size={size} color={colour} />;
+        },
+      })} >
          <Tab.Screen name="Home" component={HomeScreen} />
          <Tab.Screen name="Settings" component={Settings} />
       </Tab.Navigator>

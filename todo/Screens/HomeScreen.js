@@ -5,28 +5,45 @@ import Task from '../components/Task';
 
 import * as SecureStore from 'expo-secure-store';
 
-export default function HomeScreen() {
-  let [accessToken, setToken] = useState('')
+const URL = "https://ivy.ri.edu.sg/api/v1/"
 
-  function refreshToken() {
+export default function HomeScreen() {
+  let [courses, setCourses] = useState()
+
+  function refresh() {
     SecureStore.getItemAsync('token').then((tkn) => {
       if (tkn==null) {
         console.log("No token");
       } else {
-        accessToken = tkn;
         console.log(tkn);
       }
-      
-      setToken(tkn);
-      return;
+      return tkn;
+    }).then((tkn) => {
+      fetch(URL+"courses", {
+        headers: {
+          'Authorization' : `Bearer ${tkn}`
+        }
+      }).then((response) => {
+        return response.json()
+      }).then((responseData) => {
+        setCourses(responseData)
+        getCourses()
+      }).catch(function(error) {
+        console.log(error);
+      });
     })
+  }
+
+  function getCourses() {
+
+    console.log(courses);
   }
   
   
   return (
     <View style={styles.container}>
       <View style={styles.tasksWrapper}>
-        <Button title='refresh' onPress={() => refreshToken()}/>
+        <Button title='refresh' onPress={() => refresh()}/>
         <Text style={styles.sectionTitle}>Today's tasks</Text>
 
         <View style={styles.items}>
