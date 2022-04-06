@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    fonstSize: 24,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   items: {}, 
