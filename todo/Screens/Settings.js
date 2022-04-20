@@ -35,6 +35,7 @@ export default function HomeScreen() {
     setLoading(true)
     console.log(isLoading)
     var tempCourses = []
+    setCourses([])
     var fetches = []
     SecureStore.getItemAsync('token').then((tkn) => {
       if (tkn==null) {
@@ -78,7 +79,7 @@ export default function HomeScreen() {
       }
 
     })
-    Promise.all(fetches).then(()=>{
+    Promise.allSettled(fetches).then(()=>{
       // setLoading(false)
       setCourses(tempCourses)
       logCourses()
