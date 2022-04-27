@@ -28,28 +28,18 @@ export default function HomeScreen() {
 
   let [selectedId, setSelectedId] = useState(null);
 
-  useEffect(() => {
-    if (isLoading) setModal(true)
-    else setModal(false)
-  }, [isLoading])
 
   function refresh() {
-    setLoading(true)
-    console.log(isLoading)
-    var tempCourses = []
-    setCourses([])
+    setModal(true)
+    
+    const N = 4;
     var fetches = []
     SecureStore.getItemAsync('token').then((tkn) => {
-      if (tkn==null) {
-        console.log("No token");
-      } else {
-        console.log(tkn);
-      }
       return tkn;
     }).then(async(tkn) => {
       
-      for (var i = 1; i < 5; i++) {
-        console.log(URL+`courses?page=${i}&enrollment_state=active`)
+      for (var i = 1; i <= N; i++) {
+        // console.log(URL+`courses?page=${i}&enrollment_state=active`)
         
         fetches.push(
           fetch(URL+`courses?page=${i}&enrollment_state=active`, {
@@ -57,22 +47,11 @@ export default function HomeScreen() {
               'Authorization' : `Bearer ${tkn}`
             }
           }).then((response) => {
+            if (response == null) return []
             return response.json()
           }).then((responseData) => {
-            if (responseData == null) {
-              
-              // console.log("End of courses")
-              return;
-            }
-            
-            // console.log(responseData)
-            
-            for (var j = 0; j < responseData.length; j++) {
-              // console.log(`ResponseData ${j}:: ${responseData[j].course_code}`)
-              
-              tempCourses.push(responseData[j])
-              
-            }
+            // console.log(i);
+            return responseData;
             //logCourses()
           }).catch(function(error) {
             console.log(error);
@@ -80,30 +59,41 @@ export default function HomeScreen() {
         )
       }
 
-    })
-    Promise.all(fetches).then((response)=>{
+    }).then(() => {
+      Promise.all(fetches).then((values) =>{
       // setLoading(false)
-      setCourses(tempCourses)
-      logCourses()
-      
+        var temp = []
+        
+        // console.log("VALUES")
+        // console.log(values)
+        setCourses([])
+        for (var i = 1; i <= N; i++) {
+          if (values[i] == null) continue;
+          for (var j = 0; j < values[i].length; j++) {
+            temp.push(values[i][j]);
+          }
+        }
+        
+        setCourses(temp)
+
+        // console.log(debugcounter)
+        // debugcounter+=1
+        // for (var i = 0; i < courses.length; i++) {
+        //   console.log(courses[i].course_code)
+        // }
+        setModal(false)
+        
+    })}).catch(function(error) {
+      console.log(error);
     })
     // logCourses()x
   }
 
-  function logCourses() {
-    // console.log(courses);
-    console.log(debugcounter)
-    debugcounter+=1
-    for (var i = 0; i < courses.length; i++) {
-      console.log(courses[i].course_code)
-    }
-    setLoading(false)
-  }
 
   async function submitToken() {
     await save('token', token);
     setToken('')
-    console.log("Token updated")
+    // console.log("Token updated")
     refresh()
   }
 
@@ -140,14 +130,14 @@ export default function HomeScreen() {
         visible={showModal}
       >
         <View style={styles.modal}>
-          <Text>Temp</Text>
+          <Text>Loading... Please Wait</Text>
         </View>
 
       </Modal>
 
       
         <View style={styles.tasksWrapper}>
-          <Text style={styles.sectionTitle}>Select subjects to display</Text>
+          
 
           <View style={styles.items}>
           {/*where all tasks go*/}
@@ -156,6 +146,7 @@ export default function HomeScreen() {
               keyExtractor={(item) => item.id}
               data={courses}
               ListFooterComponent={updateTokenComponent}
+              ListHeaderComponent={<Text style={styles.sectionTitle}>Select subjects to display</Text>}
             />
           </View>
 
@@ -171,12 +162,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8EAED',
   },
   tasksWrapper:{
-    paddingTop: 30,
     flex:1,
   },
   tokenWrapper:{
     paddingVertical: 20,
-    borderBottomWidth: 2,
+    borderBottomWidth: 0,
     borderTopWidth: 2,
     paddingHorizontal: 20,
   },
@@ -199,9 +189,10 @@ const styles = StyleSheet.create({
   modal: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#00ff00',
+    backgroundColor: 'rgba(161, 237, 226, 0.1)',
     padding: 100,
   },
-  items: {}, 
+  items: {
+  }, 
   
 });
