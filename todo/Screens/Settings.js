@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Modal, Text, View, StyleSheet, TextInput, Button, ScrollView } from 'react-native';
+import { Modal, Text, View, StyleSheet, TextInput, Button, ScrollView, FlatList } from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import Subject from '../components/Subject';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -25,6 +25,8 @@ export default function HomeScreen() {
   let [courses, setCourses] = useState([])
   let [isLoading, setLoading] = useState(false)
   let [showModal, setModal] = useState(false)
+
+  let [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
     if (isLoading) setModal(true)
@@ -79,7 +81,7 @@ export default function HomeScreen() {
       }
 
     })
-    Promise.allSettled(fetches).then(()=>{
+    Promise.all(fetches).then((response)=>{
       // setLoading(false)
       setCourses(tempCourses)
       logCourses()
@@ -105,6 +107,33 @@ export default function HomeScreen() {
     refresh()
   }
 
+  // const Item = ({ item, onPress, backgroundColor, textColor }) => (
+  //   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
+  //     <Text style={[styles.title, textColor]}>{item.title}</Text>
+  //   </TouchableOpacity>
+  // );
+  
+  let renderItem = ({ item }) => {
+    // const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
+    // const color = item.id === selectedId ? 'white' : 'black';
+
+    return (
+      <Subject text={item.course_code} />
+    );
+  };
+
+  function updateTokenComponent() {
+    return (
+      <View style={styles.tokenWrapper}>
+        <Text style={styles.tokenSectionTitle}>Update Ivy token</Text>
+        <TextInput style={styles.tokenInput} value={token} onChangeText={(newToken) => setToken(newToken)}/>
+        <Button title="submit" onPress={submitToken} />
+        <Button title="refresh" onPress={refresh} />
+      </View>
+    )
+    
+  }
+
   return (
     <View style={styles.container}>
       <Modal
@@ -116,41 +145,23 @@ export default function HomeScreen() {
 
       </Modal>
 
-      <ScrollView style={styles.scrollView}>
+      
         <View style={styles.tasksWrapper}>
           <Text style={styles.sectionTitle}>Select subjects to display</Text>
 
           <View style={styles.items}>
           {/*where all tasks go*/}
-          <Subject text={'Subject 1'} />
-          <Subject text={'Subject 2'} />
-          <Subject text={'Subject 3'} />
-          <Subject text={'Subject 4'} />
+            <FlatList nestedScrollEnabled
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              data={courses}
+              ListFooterComponent={updateTokenComponent}
+            />
           </View>
 
         </View>
-
-
-        <View style={styles.tokenWrapper}>
-          <Text style={styles.sectionTitle}>Update Ivy token</Text>
-          {(isLoading?
-            <Text style={styles.sectionTitle}>Yes</Text>
-            :<Text style={styles.sectionTitle}>No</Text>
-          )}
-          <TextInput style={styles.tokenInput} value={token} onChangeText={(newToken) => setToken(newToken)}/>
-          <Button title="submit" onPress={submitToken} />
-          <Button title="refresh" onPress={refresh} />
-        </View>
-
-        
-
-      </ScrollView>
-
-      
-      
     </View>
       
-    
   );
 }
 
@@ -161,17 +172,18 @@ const styles = StyleSheet.create({
   },
   tasksWrapper:{
     paddingTop: 30,
-    paddingHorizontal: 20,
+    flex:1,
   },
   tokenWrapper:{
     paddingVertical: 20,
-    paddingHorizontal: 20,
     borderBottomWidth: 2,
     borderTopWidth: 2,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    paddingHorizontal: 20,
   },
   tokenInput: {
     fontSize: 12,
@@ -179,6 +191,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 10,
     paddingHorizontal: 5,
+  },
+  tokenSectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   modal: {
     flex: 1,
