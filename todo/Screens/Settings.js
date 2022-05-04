@@ -3,17 +3,7 @@ import { Modal, Text, View, StyleSheet, TextInput, Button, ScrollView, FlatList 
 import {StatusBar} from 'expo-status-bar';
 import Subject from '../components/Subject';
 import Spinner from 'react-native-loading-spinner-overlay';
-
-import * as SecureStore from 'expo-secure-store';
-
-const URL = "https://ivy.ri.edu.sg/api/v1/"
-
-var debugcounter = 0;
-
-async function* asyncGenerator() {
-  let i = 0;
-  yield i++;
-}
+import { apiGetCourses } from '../API/apicalls';
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -29,64 +19,13 @@ export default function HomeScreen() {
   let [selectedId, setSelectedId] = useState(null);
 
 
-  function refresh() {
+  async function refresh() {
     setModal(true)
-    
-    const N = 4;
-    var fetches = []
-    SecureStore.getItemAsync('token').then((tkn) => {
-      return tkn;
-    }).then(async(tkn) => {
-      
-      for (var i = 1; i <= N; i++) {
-        // console.log(URL+`courses?page=${i}&enrollment_state=active`)
-        
-        fetches.push(
-          fetch(URL+`courses?page=${i}&enrollment_state=active`, {
-            headers: {
-              'Authorization' : `Bearer ${tkn}`
-            }
-          }).then((response) => {
-            if (response == null) return []
-            return response.json()
-          }).then((responseData) => {
-            // console.log(i);
-            return responseData;
-            //logCourses()
-          }).catch(function(error) {
-            console.log(error);
-          })
-        )
-      }
-
-    }).then(() => {
-      Promise.all(fetches).then((values) =>{
-      // setLoading(false)
-        var temp = []
-        
-        // console.log("VALUES")
-        // console.log(values)
-        setCourses([])
-        for (var i = 1; i <= N; i++) {
-          if (values[i] == null) continue;
-          for (var j = 0; j < values[i].length; j++) {
-            temp.push(values[i][j]);
-          }
-        }
-        
-        setCourses(temp)
-
-        // console.log(debugcounter)
-        // debugcounter+=1
-        // for (var i = 0; i < courses.length; i++) {
-        //   console.log(courses[i].course_code)
-        // }
-        setModal(false)
-        
-    })}).catch(function(error) {
-      console.log(error);
+    apiGetCourses().then((res)=>{
+      // console.log(res)
+      setCourses(res)
+      setModal(false)
     })
-    // logCourses()x
   }
 
 
