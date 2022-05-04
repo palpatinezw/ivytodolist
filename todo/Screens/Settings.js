@@ -1,40 +1,40 @@
 import React, {useState, useEffect} from 'react';
-import { Modal, Text, View, StyleSheet, TextInput, Button, ScrollView, FlatList } from 'react-native';
-import {StatusBar} from 'expo-status-bar';
+import { Modal, Text, View, StyleSheet, TextInput, Button, ScrollView, FlatList, KeyboardAvoidingView } from 'react-native';
+import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import Subject from '../components/Subject';
-import Spinner from 'react-native-loading-spinner-overlay';
-import { apiGetCourses } from '../API/apicalls';
+import { apiGetCourses, apiGetTasks, submitToken } from '../API/apicalls';
 
-async function save(key, value) {
-  await SecureStore.setItemAsync(key, value);
-}
+
 
 export default function HomeScreen() {
-  let [token, setToken] = useState('');
+    // let [token, setToken] = useState('');
+	// let [tempToken, setTempToken] = useState('')
 
-  let [courses, setCourses] = useState([])
-  let [isLoading, setLoading] = useState(false)
-  let [showModal, setModal] = useState(false)
+    let [courses, setCourses] = useState([])
+    let [isLoading, setLoading] = useState(false)
+    let [showModal, setModal] = useState(false)
+    let [showEdit, setEdit] = useState(false)
 
-  let [selectedId, setSelectedId] = useState(null);
+    let [selectedId, setSelectedId] = useState(null); 
 
-
-  async function refresh() {
-    setModal(true)
-    apiGetCourses().then((res)=>{
-      // console.log(res)
-      setCourses(res)
-      setModal(false)
-    })
-  }
+    useEffect(() => {
+        refresh();
+    }, [])
 
 
-  async function submitToken() {
-    await save('token', token);
-    setToken('')
-    // console.log("Token updated")
-    refresh()
-  }
+    async function refresh() {
+        setModal(true)
+        apiGetCourses().then((res)=>{
+          // console.log(res)
+            setCourses(res)
+            setModal(false)
+        })
+
+      //for testing purposes ONLY
+        apiGetTasks(2919, [true, false, false]).then((res) => {
+            console.log(res);
+        })
+    }
 
   // const Item = ({ item, onPress, backgroundColor, textColor }) => (
   //   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
@@ -42,57 +42,76 @@ export default function HomeScreen() {
   //   </TouchableOpacity>
   // );
   
-  let renderItem = ({ item }) => {
-    // const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
-    // const color = item.id === selectedId ? 'white' : 'black';
+    let renderItem = ({ item }) => {
+      // const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
+      // const color = item.id === selectedId ? 'white' : 'black';
 
-    return (
-      <Subject text={item.course_code} />
-    );
-  };
+        return (
+            <Subject text={item.course_code} />
+        );
+    };
 
-  function updateTokenComponent() {
-    return (
-      <View style={styles.tokenWrapper}>
-        <Text style={styles.tokenSectionTitle}>Update Ivy token</Text>
-        <TextInput style={styles.tokenInput} value={token} onChangeText={(newToken) => setToken(newToken)}/>
-        <Button title="submit" onPress={submitToken} />
-        <Button title="refresh" onPress={refresh} />
-      </View>
-    )
-    
-  }
+	async function subToken(token) {
+		setEdit(false)
+		setModal(true)
+		submitToken(token).then(
+			refresh()
+		).catch((error) => console.log(error))
+	}
 
-  return (
-    <View style={styles.container}>
-      <Modal
-        visible={showModal}
-      >
-        <View style={styles.modal}>
-          <Text>Loading... Please Wait</Text>
-        </View>
+    function UpdateTokenComponent() {
+		let [tempToken,  setTempToken] = useState('')
+        return (
+            <View style={styles.tokenWrapper}>
+                <Text style={styles.tokenSectionTitle}>Update Ivy token</Text>
+                <TextInput style={styles.tokenInput} value={tempToken} onChangeText={setTempToken} />
+                <Button title="submit" onPress={() => subToken(tempToken)} />
+				<Button title="close" onPress={() => setEdit(false)}/>
+            </View>
+        )
+      
+    }
 
-      </Modal>
+  	return (
+    	<KeyboardAvoidingView style={styles.container}>
+			<Modal
+				visible={showModal}
+			>
+				<View style={styles.modal}>
+					<Text>Loading... Please Wait</Text>
+				</View>
+
+			</Modal>
+			<Modal
+				visible={showEdit}
+			>
+				<UpdateTokenComponent/>
+			</Modal>
 
       
-        <View style={styles.tasksWrapper}>
-          
+			<View style={styles.tasksWrapper}>
+			
 
-          <View style={styles.items}>
-          {/*where all tasks go*/}
-            <FlatList nestedScrollEnabled
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id}
-              data={courses}
-              ListFooterComponent={updateTokenComponent}
-              ListHeaderComponent={<Text style={styles.sectionTitle}>Select subjects to display</Text>}
-            />
-          </View>
+				<View style={styles.items}>
+					<FlatList
+						renderItem={renderItem}
+						keyExtractor={(item) => item.id}
+						data={courses}
+						ListFooterComponent={
+							<View style={styles.tokenWrapper}>
+								<Button title="refresh" onPress={refresh} />
+								<Button title="Edit Ivy Token" onPress={() => {setEdit(true)}} />
+							</View>
+						}
+						ListHeaderComponent={<Text style={styles.sectionTitle}>Select subjects to display</Text>}
+						ListEmptyComponent={<Text>No subjects to display, check if your Ivy token is keyed in correctly</Text>}
+					/>
+				</View>
 
-        </View>
-    </View>
+			</View>
+    	</KeyboardAvoidingView>
       
-  );
+	);
 }
 
 const styles = StyleSheet.create({
@@ -101,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8EAED',
   },
   tasksWrapper:{
-    flex:1,
+    flex: 1,
   },
   tokenWrapper:{
     paddingVertical: 20,
