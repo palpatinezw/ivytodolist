@@ -76,7 +76,7 @@ export async function apiGetTasks(courseCode, taskSource) {
     return SecureStore.getItemAsync('token').then((tkn) => {
         return tkn;
     }).then(async(tkn) => {
-        if (taskSource[0]) {
+        if (taskSource[0] > 0) {
             fetches.push(
                 fetch(URL+`courses/${courseCode}/modules`, {
                     headers: {
@@ -94,7 +94,7 @@ export async function apiGetTasks(courseCode, taskSource) {
                 })
             )
         }
-        if (taskSource[1]) {
+        if (taskSource[1] > 0) {
             fetches.push(
                 fetch(URL+`courses/${courseCode}/assignments`, {
                     headers: {
@@ -112,7 +112,7 @@ export async function apiGetTasks(courseCode, taskSource) {
                 })
             )
         }
-        if (taskSource[2]) {
+        if (taskSource[2] > 0) {
             fetches.push(
                 fetch(URL+`announcements?context_codes=courses_${courseCode}`, {
                     headers: {
