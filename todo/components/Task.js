@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
     //height: 'fit',
     //flexDirection: 'row',
     //justifyContent: 'right',
-    alignSelf: 'right',
     marginLeft: 150,
   },
 
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
     borderRadius:5,
     marginRight: 8,
-    alignItems: 'centre',
+    alignItems: 'center',
     marginTop: 15,
     //marginRight: 20,
     //flexDirection: 'row',

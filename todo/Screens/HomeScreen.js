@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Task from '../components/Task';
-import DetailsNoExpansion from '../components/DetailsNoExpansion';
 
 // Example of Collapsible/Accordion/Expandable List View in React Native
 // https://aboutreact.com/collapsible-accordion-expandable-view/
@@ -121,7 +120,7 @@ const HomeScreen = () => {
         transition="backgroundColor">
         <Animatable.Text
           animation={isActive ? 'bounceIn' : undefined}
-          style={{ textAlign: 'centre' }}>
+          style={{ textAlign: 'center' }}>
           {section.content}
         </Animatable.Text>
       </Animatable.View>
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
     //marginBottom: 400,
     fontSize: 100,
     //flexDirection:'centre',
-    fllex: 1,
+    flex: 1,
     //justifyContent: 'centre'
     paddingLeft: 0.5
   },
